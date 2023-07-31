@@ -57,3 +57,21 @@ button.link {
 .instructions-container.hidden {
   display: none !important;
 }
+
+table {
+  margin-top: 2em;
+  border-collapse: collapse;
+}
+.b-all {
+  border: 1px solid #ccc;
+}
+.bt {
+  border-top: 1px solid #ccc;
+}
+.bl {
+  border-left: 1px solid #ccc;
+}
+
+footer {
+  margin-top: 3em;
+}

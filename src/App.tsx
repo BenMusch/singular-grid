@@ -65,39 +65,39 @@ function GridDisplay(props: { grid: Grid; guess: any | null }) {
       <table>
         <tr>
           <th></th>
-          <th>
+          <th className="bl">
             <Logo team={grid.columns[0]} />
           </th>
-          <th>
+          <th className="bl">
             <Logo team={grid.columns[1]} />
           </th>
-          <th>
+          <th className="bl">
             <TeamOrAward teamOrAward={grid.columns[2]} />
           </th>
         </tr>
         <tr>
-          <th>
+          <th className="bt">
             <Logo team={grid.rows[0]} />
           </th>
-          <td>{contentForRowAndCol(0, 0)}</td>
-          <td>{contentForRowAndCol(0, 1)}</td>
-          <td>{contentForRowAndCol(0, 2)}</td>
+          <td className="b-all">{contentForRowAndCol(0, 0)}</td>
+          <td className="b-all">{contentForRowAndCol(0, 1)}</td>
+          <td className="bt">{contentForRowAndCol(0, 2)}</td>
         </tr>
         <tr>
-          <th>
+          <th className="bt">
             <Logo team={grid.rows[1]} />
           </th>
-          <td>{contentForRowAndCol(1, 0)}</td>
-          <td>{contentForRowAndCol(1, 1)}</td>
-          <td>{contentForRowAndCol(1, 2)}</td>
+          <td className="b-all">{contentForRowAndCol(1, 0)}</td>
+          <td className="b-all">{contentForRowAndCol(1, 1)}</td>
+          <td className="bt">{contentForRowAndCol(1, 2)}</td>
         </tr>
         <tr>
-          <th>
+          <th className="bt">
             <TeamOrAward teamOrAward={grid.rows[2]} />
           </th>
-          <td>{contentForRowAndCol(2, 0)}</td>
-          <td>{contentForRowAndCol(2, 1)}</td>
-          <td>{contentForRowAndCol(2, 2)}</td>
+          <td className="bt bl">{contentForRowAndCol(2, 0)}</td>
+          <td className="bt bl">{contentForRowAndCol(2, 1)}</td>
+          <td className="bt bl">{contentForRowAndCol(2, 2)}</td>
         </tr>
       </table>
     </div>
