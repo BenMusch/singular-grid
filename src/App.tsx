@@ -381,7 +381,7 @@ function InstructionsPage() {
 }
 
 function InstructionsModal() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(!hasSeenInstruction());
 
   if (!visible) {
     return null;
@@ -390,15 +390,15 @@ function InstructionsModal() {
   return (
     <div className="instructions-modal-container">
       <div className="instructions-content">
-          <Instructions />
-          <button
-            onClick={() => {
-              setVisible(false);
-              markInstructionsSeen();
-            }}
-          >
-            Close
-          </button>
+        <Instructions />
+        <button
+          onClick={() => {
+            setVisible(false);
+            markInstructionsSeen();
+          }}
+        >
+          Close
+        </button>
       </div>
     </div>
   );
