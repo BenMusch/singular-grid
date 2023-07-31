@@ -1,14 +1,18 @@
 .grid td,
 .grid th {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
 }
 
 .logo {
-  width: 100px;
-  height: 100px;
+  width: 75px;
+  height: 75px;
 }
 
 .guess-select select {
   font-size: 1.5em;
+}
+
+.year-select select {
+  font-size: 1.25em;
 }

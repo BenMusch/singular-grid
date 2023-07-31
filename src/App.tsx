@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import { Routes, BrowserRouter, Route } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import { DATA } from "./data";
 import type { Grid, Team, Award, AwardId } from "./baseball";
@@ -146,19 +148,24 @@ function CorrectGuessDisplay(props: { player: any; onNext: () => void }) {
   );
 }
 
-function App() {
-  const randPlayer = DATA[Math.floor(Math.random() * DATA.length)]!;
-  const [playerData, setPlayerData] = useState<any>(randPlayer);
+function Game() {
+  const [yearFilter, setYearFilter] = useState<number>(0);
+  const playerMatchesFilter = (playerData: any) => {
+    const lastActiveYear = parseInt(playerData.years.split("-")[1]);
+    return lastActiveYear > yearFilter;
+  };
+  const randPlayer = () => {
+    const eligiblePlayers = DATA.filter(playerMatchesFilter);
+    return eligiblePlayers[Math.floor(Math.random() * eligiblePlayers.length)]!;
+  };
+  const [playerData, setPlayerData] = useState<any>(randPlayer());
   const [guess, setGuess] = useState<any>(null);
   const [showYears, setShowYears] = useState<boolean>(false);
   const [showLength, setShowLength] = useState<boolean>(false);
 
   // TODO: handle grids that could apply to multiple players
   const isCorrect = guess && guess.id === playerData.id;
-
   const grid = gridForPlayer(playerData);
-  console.log(playerData);
-  console.log(grid);
 
   const notYetCorrectHeader = (
     <>
@@ -197,9 +204,42 @@ function App() {
     </>
   );
 
+  if (!playerMatchesFilter(playerData)) {
+    setPlayerData(randPlayer());
+    setGuess(null);
+    setShowYears(false);
+    setShowLength(false);
+  }
+
   return (
     <div>
       <center>
+        <div className="year-select">
+          <label htmlFor="year">Filter by year</label>
+          <select
+            id="year"
+            value={yearFilter ? yearFilter : "0"}
+            onChange={(e) => {
+              e.preventDefault();
+              setYearFilter(parseInt(e.target.value));
+            }}
+          >
+            <option value="0" key={-1}>
+              All years
+            </option>
+            {[
+              1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000,
+              2010, 2020,
+            ].map((year) => {
+              return (
+                <option value={year} key={year}>
+                  {year} and later
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <br />
         {isCorrect ? (
           <CorrectGuessDisplay
             player={guess}
@@ -207,15 +247,81 @@ function App() {
               setGuess(null);
               setShowYears(false);
               setShowLength(false);
-              setPlayerData(DATA[Math.floor(Math.random() * DATA.length)]!);
+              setPlayerData(randPlayer());
             }}
           />
         ) : (
           notYetCorrectHeader
         )}
         <GridDisplay grid={grid} guess={guess} />
+        <footer>
+          <Link to="/">Browse all players</Link>
+        </footer>
       </center>
     </div>
+  );
+}
+
+function Player() {
+  const { id } = useParams();
+  const player = DATA.find((playerData: any) => playerData.id === id)!;
+  const grid = gridForPlayer(player);
+
+  return (
+    <div>
+      <center>
+        <div className="player-display">
+          <img
+            src={`https://www.baseball-reference.com/req/${player.headshot_url}`}
+          />
+          <br />
+          <h3>
+            <a href={`https://baseball-reference.com/${player.link}`}>
+              {player.name}
+            </a>
+          </h3>
+          <br />
+        </div>
+        <GridDisplay grid={grid} guess={null} />
+        <footer>
+          <Link to="/">Play the game</Link>
+        </footer>
+      </center>
+    </div>
+  );
+}
+
+function All() {
+  return (
+    <div>
+      <h1>All possible players</h1>
+      <ul>
+        {DATA.map((playerData: any) => {
+          return (
+            <li>
+              <Link to={`/players/${playerData.id}`}>
+                {playerData.name} ({playerData.years})
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      <footer>
+        <Link to="/">Play the game</Link>
+      </footer>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="players" element={<All />} />
+        <Route path="players/:id" element={<Player />} />
+        <Route index element={<Game />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

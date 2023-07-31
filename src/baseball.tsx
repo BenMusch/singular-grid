@@ -49,6 +49,16 @@ export const CAREER_AWARDS_BY_ID: { [k: string]: CareerAward } = {
     timespan: AwardTimespan.CAREER,
     statistic: AwardStatistic.BA,
   },
+  career_b_h_3000: {
+    name: ".300+ Career Avg",
+    timespan: AwardTimespan.CAREER,
+    statistic: AwardStatistic.H,
+  },
+  career_b_hr_500: {
+    name: ".500+ HR Career",
+    timespan: AwardTimespan.CAREER,
+    statistic: AwardStatistic.HR,
+  },
   career_award_hof: {
     name: "Hall of Fame",
     timespan: AwardTimespan.CAREER,
@@ -100,6 +110,11 @@ export const SEASON_AWARDS_BY_ID: { [k: string]: SeasonAward } = {
     timespan: AwardTimespan.SEASON,
     statistic: AwardStatistic.W,
   },
+  season_p_so_200: {
+    name: "200+ Strikeout Season",
+    timespan: AwardTimespan.SEASON,
+    statistic: AwardStatistic.SO,
+  },
   season_b_sb_30: {
     name: "30+ Steal Season",
     timespan: AwardTimespan.SEASON,
@@ -134,7 +149,6 @@ function getCareerAwards(obj: any): Set<CareerAwardId> {
 }
 
 export function gridsForPlayer(playerData: any): Grid[] {
-  debugger;
   const grids: Grid[] = [];
   const careerAwards = getCareerAwards(playerData);
   const teamsBySeasonAward = new Map<SeasonAwardId, Set<Team>>();
