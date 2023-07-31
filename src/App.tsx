@@ -256,7 +256,7 @@ function Game() {
         )}
         <GridDisplay grid={grid} guess={guess} />
         <footer>
-          <Link to="/">Browse all players</Link>
+          <Link to="/players">Browse all players</Link>
         </footer>
       </center>
     </div>
