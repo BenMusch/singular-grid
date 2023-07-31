@@ -2,6 +2,8 @@
 .grid th {
   width: 150px;
   height: 150px;
+  text-align: center;
+  veritcal-align: center;
 }
 
 .logo {
