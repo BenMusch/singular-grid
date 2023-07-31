@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import logo from "./logo.svg";
 import "./App.css";
 import { Routes, BrowserRouter, Route } from "react-router-dom";
 import { Link, useParams } from "react-router-dom";
@@ -17,6 +16,7 @@ function Logo(props: { team: Team }) {
   const { team } = props;
   return (
     <img
+      alt={team}
       className="logo"
       src={`https://cdn.ssref.net/req/202306191/tlogo/br/ig/light/${team}.svg`}
     />
@@ -134,6 +134,7 @@ function CorrectGuessDisplay(props: { player: any; onNext: () => void }) {
   return (
     <div className="player-display">
       <img
+        alt={player.name}
         src={`https://www.baseball-reference.com/req/${player.headshot_url}`}
       />
       <br />
@@ -177,9 +178,9 @@ function Game() {
             playerData.name.replace(/\S/g, "?")
           ) : (
             <>
-              <a href="#" onClick={() => setShowLength(true)}>
+              <button className="link" onClick={() => setShowLength(true)}>
                 Reveal Length
-              </a>
+              </button>
             </>
           )}
         </div>
@@ -189,16 +190,16 @@ function Game() {
             {showYears ? (
               playerData.years
             ) : (
-              <a href="#" onClick={() => setShowYears(true)}>
+              <button className="link" onClick={() => setShowYears(true)}>
                 Reveal
-              </a>
+              </button>
             )}
           </span>
         </div>
         <div className="give-up">
-          <a href="#" onClick={() => setGuess(playerData)}>
+          <button className="link" onClick={() => setGuess(playerData)}>
             Give Up
-          </a>
+          </button>
         </div>
       </div>
     </>
@@ -272,6 +273,7 @@ function Player() {
       <center>
         <div className="player-display">
           <img
+            alt={player.name}
             src={`https://www.baseball-reference.com/req/${player.headshot_url}`}
           />
           <br />
