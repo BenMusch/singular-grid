@@ -8,3 +8,7 @@
   width: 100px;
   height: 100px;
 }
+
+.guess-select select {
+  font-size: 1.5em;
+}

@@ -1,4 +1,5 @@
 export const DATA = [
+  /*
   {
     id: "hernan007rob",
     teams: [
@@ -799,6 +800,7 @@ export const DATA = [
     search_name: ["Silver King"],
     link: "/players/k/kingsi01.shtml",
   },
+  */
   {
     id: "kinsle001ian",
     teams: [
@@ -822,6 +824,7 @@ export const DATA = [
     search_name: ["Ian Kinsler"],
     link: "/players/k/kinslia01.shtml",
   },
+  /*
   {
     id: "konetc001edw",
     teams: [
@@ -840,4 +843,5 @@ export const DATA = [
     search_name: ["Ed Konetchy"],
     link: "/players/k/koneted01.shtml",
   },
+  */
 ];

@@ -36,14 +36,13 @@ function TeamOrAward(props: { teamOrAward: Team | AwardId }) {
   return <Logo team={teamOrAward as Team} />;
 }
 
-function Grid(props: { grid: Grid; player: any; guess: any | null }) {
-  const { grid, player, guess } = props;
+function GridDisplay(props: { grid: Grid; guess: any | null }) {
+  const { grid, guess } = props;
 
   const contentForRowAndCol = (rowNum: number, colNum: number) => {
     if (!guess) {
       return "";
     }
-
     if (playerMatchesSquare(guess, grid.rows[rowNum], grid.columns[colNum])) {
       return "✅";
     }
@@ -52,57 +51,57 @@ function Grid(props: { grid: Grid; player: any; guess: any | null }) {
 
   return (
     <div className="grid">
-      <center>
-        <h2>{player.name}</h2>
-        <table>
-          <tr>
-            <th></th>
-            <th>
-              <Logo team={grid.columns[0]} />
-            </th>
-            <th>
-              <Logo team={grid.columns[1]} />
-            </th>
-            <th>
-              <TeamOrAward teamOrAward={grid.columns[2]} />
-            </th>
-          </tr>
-          <tr>
-            <th>
-              <Logo team={grid.rows[0]} />
-            </th>
-            <td>{contentForRowAndCol(0, 0)}</td>
-            <td>{contentForRowAndCol(0, 1)}</td>
-            <td>{contentForRowAndCol(0, 2)}</td>
-          </tr>
-          <tr>
-            <th>
-              <Logo team={grid.rows[1]} />
-            </th>
-            <td>{contentForRowAndCol(1, 0)}</td>
-            <td>{contentForRowAndCol(1, 1)}</td>
-            <td>{contentForRowAndCol(1, 2)}</td>
-          </tr>
-          <tr>
-            <th>
-              <TeamOrAward teamOrAward={grid.rows[2]} />
-            </th>
-            <td>{contentForRowAndCol(2, 0)}</td>
-            <td>{contentForRowAndCol(2, 1)}</td>
-            <td>{contentForRowAndCol(2, 2)}</td>
-          </tr>
-        </table>
-      </center>
+      <table>
+        <tr>
+          <th></th>
+          <th>
+            <Logo team={grid.columns[0]} />
+          </th>
+          <th>
+            <Logo team={grid.columns[1]} />
+          </th>
+          <th>
+            <TeamOrAward teamOrAward={grid.columns[2]} />
+          </th>
+        </tr>
+        <tr>
+          <th>
+            <Logo team={grid.rows[0]} />
+          </th>
+          <td>{contentForRowAndCol(0, 0)}</td>
+          <td>{contentForRowAndCol(0, 1)}</td>
+          <td>{contentForRowAndCol(0, 2)}</td>
+        </tr>
+        <tr>
+          <th>
+            <Logo team={grid.rows[1]} />
+          </th>
+          <td>{contentForRowAndCol(1, 0)}</td>
+          <td>{contentForRowAndCol(1, 1)}</td>
+          <td>{contentForRowAndCol(1, 2)}</td>
+        </tr>
+        <tr>
+          <th>
+            <TeamOrAward teamOrAward={grid.rows[2]} />
+          </th>
+          <td>{contentForRowAndCol(2, 0)}</td>
+          <td>{contentForRowAndCol(2, 1)}</td>
+          <td>{contentForRowAndCol(2, 2)}</td>
+        </tr>
+      </table>
     </div>
   );
 }
 
-function GuessSelect(props: { onGuess: (g: any) => void }) {
-  const { onGuess } = props;
+function GuessSelect(props: {
+  onGuess: (g: any) => void;
+  curGuess: any | null;
+}) {
+  const { onGuess, curGuess } = props;
   return (
-    <div>
+    <div className="guess-select">
       <select
-        value="blank"
+        value={curGuess ? curGuess.id : "blank"}
         onChange={(e) => {
           e.preventDefault();
           const id = e.target.value;
@@ -114,7 +113,7 @@ function GuessSelect(props: { onGuess: (g: any) => void }) {
         }}
       >
         <option value="blank" key={-1}>
-          ------
+          Guess player
         </option>
         {DATA.map((playerData, i) => {
           return (
@@ -128,17 +127,94 @@ function GuessSelect(props: { onGuess: (g: any) => void }) {
   );
 }
 
+function CorrectGuessDisplay(props: { player: any; onNext: () => void }) {
+  const { player, onNext } = props;
+  return (
+    <div className="player-display">
+      <img
+        src={`https://www.baseball-reference.com/req/${player.headshot_url}`}
+      />
+      <br />
+      <h3>
+        <a href={`https://baseball-reference.com/${player.link}`}>
+          {player.name}
+        </a>
+      </h3>
+      <br />
+      <button onClick={onNext}>Play Again</button>
+    </div>
+  );
+}
+
 function App() {
   const randPlayer = DATA[Math.floor(Math.random() * DATA.length)]!;
   const [playerData, setPlayerData] = useState<any>(randPlayer);
   const [guess, setGuess] = useState<any>(null);
+  const [showYears, setShowYears] = useState<boolean>(false);
+  const [showLength, setShowLength] = useState<boolean>(false);
+
+  // TODO: handle grids that could apply to multiple players
+  const isCorrect = guess && guess.id === playerData.id;
 
   const grid = gridForPlayer(playerData);
+  console.log(playerData);
+  console.log(grid);
+
+  const notYetCorrectHeader = (
+    <>
+      <GuessSelect onGuess={setGuess} curGuess={guess} />
+      <div className="player-info">
+        <div className="player-name">
+          Name:{" "}
+          {showLength ? (
+            playerData.name.replace(/\S/g, "?")
+          ) : (
+            <>
+              <a href="#" onClick={() => setShowLength(true)}>
+                Reveal Length
+              </a>
+            </>
+          )}
+        </div>
+        <div className="player-years-active">
+          <span>
+            Years Active:{" "}
+            {showYears ? (
+              playerData.years
+            ) : (
+              <a href="#" onClick={() => setShowYears(true)}>
+                Reveal
+              </a>
+            )}
+          </span>
+        </div>
+        <div className="give-up">
+          <a href="#" onClick={() => setGuess(playerData)}>
+            Give Up
+          </a>
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <div>
-      <GuessSelect onGuess={setGuess} />
-      <Grid player={playerData!} grid={grid} guess={guess} />
+      <center>
+        {isCorrect ? (
+          <CorrectGuessDisplay
+            player={guess}
+            onNext={() => {
+              setGuess(null);
+              setShowYears(false);
+              setShowLength(false);
+              setPlayerData(DATA[Math.floor(Math.random() * DATA.length)]!);
+            }}
+          />
+        ) : (
+          notYetCorrectHeader
+        )}
+        <GridDisplay grid={grid} guess={guess} />
+      </center>
     </div>
   );
 }

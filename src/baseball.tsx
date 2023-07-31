@@ -134,6 +134,7 @@ function getCareerAwards(obj: any): Set<CareerAwardId> {
 }
 
 export function gridsForPlayer(playerData: any): Grid[] {
+  debugger;
   const grids: Grid[] = [];
   const careerAwards = getCareerAwards(playerData);
   const teamsBySeasonAward = new Map<SeasonAwardId, Set<Team>>();
@@ -197,6 +198,10 @@ export function gridsForPlayer(playerData: any): Grid[] {
   for (const [seasonAward1, teams1] of teamsBySeasonAward.entries()) {
     for (const [seasonAward2, teams2] of teamsBySeasonAward.entries()) {
       if (seasonAward1 === seasonAward2) {
+        continue;
+      }
+
+      if (teams1.size < 2 || teams2.size < 2) {
         continue;
       }
 
@@ -378,7 +383,7 @@ export function playerMatchesSquare(
     for (const awardId of [row, col]) {
       const award = getAward(awardId);
       if (award.timespan === AwardTimespan.SEASON) {
-        if (!playerData.teams.some((t: any) => t.id === t[awardId])) {
+        if (!playerData.teams.some((t: any) => t[awardId])) {
           return false;
         }
       } else {
