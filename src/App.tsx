@@ -12,6 +12,14 @@ import {
   CAREER_AWARDS_BY_ID,
 } from "./baseball";
 
+const SEEN_INSTRUCTIONS_KEY = "seenInstructions";
+function markInstructionsSeen() {
+  localStorage.setItem(SEEN_INSTRUCTIONS_KEY, "1");
+}
+function hasSeenInstruction() {
+  return localStorage.getItem(SEEN_INSTRUCTIONS_KEY) !== null;
+}
+
 function Logo(props: { team: Team }) {
   const { team } = props;
   return (
@@ -170,6 +178,7 @@ function Game() {
 
   const notYetCorrectHeader = (
     <>
+      <InstructionsModal />
       <GuessSelect onGuess={setGuess} curGuess={guess} />
       <div className="player-info">
         <div className="player-name">
@@ -257,6 +266,8 @@ function Game() {
         <GridDisplay grid={grid} guess={guess} />
         <footer>
           <Link to="/players">Browse all players</Link>
+          {" • "}
+          <Link to="/instructions">Instructions + FAQ</Link>
         </footer>
       </center>
     </div>
@@ -287,8 +298,108 @@ function Player() {
         <GridDisplay grid={grid} guess={null} />
         <footer>
           <Link to="/">Play the game</Link>
+          {" • "}
+          <Link to="/instructions">Instructions + FAQ</Link>
         </footer>
       </center>
+    </div>
+  );
+}
+
+function Instructions() {
+  return (
+    <div>
+      <h1>Singular Grid: Instructions</h1>
+      <p>
+        Singular Grid is a game based heavily on{" "}
+        <a href="https://www.immaculategrid.com/">Immaculate Grid</a>. If you
+        are not familiar with Immaculate Grid, you will want to check that out
+        before playing.
+      </p>
+
+      <p>
+        Singular Grid takes the same grid structure as and rules as Immaculate
+        Grid. However, instead of guessing a unique player for each square, you
+        guess the player who would be a valid answer for <i>any</i> of the
+        squares in the grid.
+      </p>
+
+      <p>
+        Only {DATA.length} players in MLB history have careers which make them
+        valid "singular grids." This is because it requires a player to achieve
+        difficult career/season accolades <i>and</i> play for a large number of
+        teams.
+      </p>
+
+      <p>
+        You can view a list of all players who meet the necessary criteria{" "}
+        <Link to="/players">here</Link>. Clicking on an individual name will
+        bring up their grid.
+      </p>
+
+      <p>
+        <b>Why doesn't this player show up in the search?</b>
+        <br />
+        The search only covers players with a valid grid associated with them.
+        Though this is not ideal, the alternative would be downloading/scraping
+        the requried data for every player in MLB history, which is not feasible
+        at this time.
+      </p>
+
+      <p>
+        <b>Who made this? Is it open source?</b>
+        <br />
+        <a href="https://twitter.com/benmusch">Ben Muschol</a>. The code is
+        available on{" "}
+        <a href="https://github.com/benmusch/singular-grid">Github</a>
+      </p>
+
+      <p>
+        <b>
+          I found an issue not addressed in the instructions. Where should I
+          report it?
+        </b>
+        <br />
+        You can <a href="mailto:benmuschol@gmail.com">email me</a> or open an
+        issue on{" "}
+        <a href="https://github.com/BenMusch/singular-grid/issues/new">
+          GitHub
+        </a>
+      </p>
+    </div>
+  );
+}
+
+function InstructionsPage() {
+  return (
+    <div>
+      <div className="instructions-container">
+        <Instructions />
+      </div>
+    </div>
+  );
+}
+
+function InstructionsModal() {
+  const [visible, setVisible] = useState(true);
+
+  if (!visible) {
+    return null;
+  }
+
+  return (
+    <div className="instructions-modal-container">
+      <div className="instructions-content">
+          <Instructions />
+          <button
+            onClick={() => {
+              setVisible(false);
+              markInstructionsSeen();
+            }}
+          >
+            Close
+          </button>
+      </div>
     </div>
   );
 }
@@ -310,6 +421,8 @@ function All() {
       </ul>
       <footer>
         <Link to="/">Play the game</Link>
+        {" • "}
+        <Link to="/instructions">Instructions + FAQ</Link>
       </footer>
     </div>
   );
@@ -319,6 +432,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="instructions" element={<InstructionsPage />} />
         <Route path="players" element={<All />} />
         <Route path="players/:id" element={<Player />} />
         <Route index element={<Game />} />

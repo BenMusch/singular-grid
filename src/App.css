@@ -26,3 +26,28 @@ button.link {
   text-decoration: underline;
   cursor: pointer;
 }
+
+.instructions-container {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.instructions-modal-container {
+  position: absolute;
+  z-index: 100;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  max-width: 600px;
+  background-color: #fff;
+  padding: 1em;
+  border: 1px solid black;
+  -webkit-box-shadow: 0px 0px 25px 10px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 0px 25px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 0px 25px 10px rgba(0, 0, 0, 0.15);
+}
+
+.instructions-container.hidden {
+  display: none !important;
+}
