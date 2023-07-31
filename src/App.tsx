@@ -356,7 +356,7 @@ function Instructions() {
         <br />
         <a href="https://twitter.com/benmusch">Ben Muschol</a>. The code is
         available on{" "}
-        <a href="https://github.com/benmusch/singular-grid">Github</a>
+        <a href="https://github.com/benmusch/singular-grid">GitHub</a>
       </p>
 
       <p>
