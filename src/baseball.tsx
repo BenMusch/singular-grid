@@ -45,14 +45,16 @@ export const CAREER_AWARDS_BY_ID: { [k: string]: CareerAward } = {
 };
 
 export const SEASON_AWARDS_BY_ID: { [k: string]: SeasonAward } = {
+  ws_champ: { timespan: AwardTimespan.SEASON, name: "World Series" },
   season_allstar: { timespan: AwardTimespan.SEASON, name: "All-Star" },
-  season_award_gold_golve: {
+  season_award_gold_glove: {
     timespan: AwardTimespan.SEASON,
     name: "Gold Glove",
   },
   season_award_silver_slugger: {
     timespan: AwardTimespan.SEASON,
-    name: "Gold Glove",
+    name: "Silver Slugger",
+    position: AwardPosition.BATTING,
   },
   season_award_cy_young: {
     timespan: AwardTimespan.SEASON,
@@ -88,6 +90,11 @@ export const SEASON_AWARDS_BY_ID: { [k: string]: SeasonAward } = {
     position: AwardPosition.PITCHING,
     timespan: AwardTimespan.SEASON,
   },
+  season_b_sb_30: {
+    name: "30+ Steal Season",
+    position: AwardPosition.BATTING,
+    timespan: AwardTimespan.SEASON,
+  },
   season_award_mvp: {
     name: "MVP",
     timespan: AwardTimespan.SEASON,
@@ -96,12 +103,12 @@ export const SEASON_AWARDS_BY_ID: { [k: string]: SeasonAward } = {
 
 type SeasonAwardId = keyof typeof SEASON_AWARDS_BY_ID;
 type CareerAwardId = keyof typeof CAREER_AWARDS_BY_ID;
-type AwardId = CareerAward | SeasonAward;
+type AwardId = CareerAwardId | SeasonAwardId;
 
 // string represents team for now, should be enum
 type Team = string;
 
-type Grid = {
+export type Grid = {
   columns: [Team, Team, AwardId];
   rows: [Team, Team, AwardId | Team];
 };
@@ -163,7 +170,7 @@ export function gridForPlayer(playerData: any): Grid {
     }
 
     // Try 6 team career award grid
-    if (careerAwards.size > 1) {
+    if (careerAwards.size >= 1) {
       const careerAward = [...careerAwards][0]!;
       const teams = [...allTeams];
       return {
@@ -228,5 +235,43 @@ export function gridForPlayer(playerData: any): Grid {
     }
   }
 
-  throw new Error("Could not generate grid for player!");
+  if (careerAwards.size >= 1) {
+    for (const [seasonAward, teams] of teamsBySeasonAward.entries()) {
+      if (teams.size >= 2) {
+        const rows = [...[...teams].slice(0, 2), seasonAward];
+        const columns = [];
+
+        for (const team of allTeams) {
+          if (columns.length === 2) {
+            break;
+          }
+
+          if (rows.includes(team)) {
+            continue;
+          }
+
+          columns.push(team);
+        }
+        columns.push([...careerAwards][0]!);
+
+        return { rows, columns } as Grid;
+      }
+    }
+  }
+
+  if (careerAwards.size >= 2) {
+    const careerAward1 = [...careerAwards][0]!;
+    const careerAward2 = [...careerAwards][0]!;
+    const teams = [...allTeams];
+
+    return {
+      rows: [...teams.slice(0, 2), careerAward1],
+      columns: [...teams.slice(2, 4), careerAward2],
+    } as unknown as Grid;
+  }
+
+  console.log(playerData);
+  throw new Error(
+    "Could not generate grid for player! This should never happen"
+  );
 }
