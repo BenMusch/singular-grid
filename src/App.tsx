@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./App.css";
 import { Routes, BrowserRouter, Route } from "react-router-dom";
 import { Link, useParams } from "react-router-dom";
+import Select from "react-select";
 
 import { DATA } from "./data";
 import type { Grid, Team, Award, AwardId } from "./baseball";
@@ -108,31 +109,35 @@ function GuessSelect(props: {
   curGuess: any | null;
 }) {
   const { onGuess, curGuess } = props;
+  const options = DATA.map((playerData) => {
+    return { value: playerData.id, label: playerData.name };
+  });
   return (
     <div className="guess-select">
-      <select
-        value={curGuess ? curGuess.id : "blank"}
-        onChange={(e) => {
-          e.preventDefault();
-          const id = e.target.value;
+      <Select
+        noOptionsMessage={(inputVal) => {
+          return (
+            <>
+              Player not found. Though they may be a valid MLB player, players
+              only show up in these results if they are a valid answer to one of
+              the possible grids. See{" "}
+              <Link to="/instructions">instructions</Link> for more info
+            </>
+          );
+        }}
+        placeholder="Guess a player..."
+        className="guess-select"
+        id="guess"
+        options={options}
+        value={curGuess ? curGuess.id : undefined}
+        onChange={({ value }) => {
           // TODO: faster lookup
-          const playerData = DATA.find((playerData) => playerData.id === id);
+          const playerData = DATA.find((playerData) => playerData.id === value);
           if (playerData) {
             onGuess(playerData);
           }
         }}
-      >
-        <option value="blank" key={-1}>
-          Guess player
-        </option>
-        {DATA.map((playerData, i) => {
-          return (
-            <option value={playerData.id} key={i}>
-              {playerData.name}
-            </option>
-          );
-        })}
-      </select>
+      />
     </div>
   );
 }
@@ -161,7 +166,7 @@ function Game() {
   const [yearFilter, setYearFilter] = useState<number>(0);
   const playerMatchesFilter = (playerData: any) => {
     const lastActiveYear = parseInt(playerData.years.split("-")[1]);
-    return lastActiveYear > yearFilter;
+    return lastActiveYear >= yearFilter;
   };
   const randPlayer = () => {
     const eligiblePlayers = DATA.filter(playerMatchesFilter);
@@ -178,7 +183,6 @@ function Game() {
 
   const notYetCorrectHeader = (
     <>
-      <InstructionsModal />
       <GuessSelect onGuess={setGuess} curGuess={guess} />
       <div className="player-info">
         <div className="player-name">
@@ -223,9 +227,10 @@ function Game() {
 
   return (
     <div>
+      <InstructionsModal />
       <center>
         <div className="year-select">
-          <label htmlFor="year">Filter by year</label>
+          <label htmlFor="year">Only play for players active during:</label>
           <select
             id="year"
             value={yearFilter ? yearFilter : "0"}

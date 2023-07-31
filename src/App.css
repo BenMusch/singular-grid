@@ -1,3 +1,7 @@
+body {
+  padding-top: 1em;
+}
+
 .grid td,
 .grid th {
   width: 150px;
@@ -11,12 +15,14 @@
   height: 75px;
 }
 
-.guess-select select {
-  font-size: 1.5em;
+.guess-select {
+  max-width: 450px;
+  margin-bottom: 1em;
 }
 
 .year-select select {
-  font-size: 1.25em;
+  font-size: 1em;
+  margin-left: 0.5em;
 }
 
 button.link {
