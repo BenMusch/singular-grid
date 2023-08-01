@@ -326,6 +326,11 @@ function scoreGrid(grid: Grid): number {
     awards.push(getAward(grid.rows[2]));
   }
 
+  if (grid.columns.length < 3 || grid.rows.length < 3) {
+    // too lazy to fix whatever caused this
+    return -1000000000000;
+  }
+
   for (const award of awards) {
     // Prefer season awards
     if (award.timespan === AwardTimespan.SEASON) {
