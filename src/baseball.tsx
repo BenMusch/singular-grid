@@ -520,7 +520,8 @@ export function playerMatchesSquare(
       return playerData[awardId];
     }
   } else {
-    for (const [awardId, _qualifiedStatus] of [row, col]) {
+    for (const awardIdAndStatus of [row, col]) {
+      const awardId = awardIdAndStatus[0];
       const award = getAward(awardId);
       if (award.timespan === AwardTimespan.SEASON) {
         if (!playerData.teams.some((t: any) => t[awardId])) {
