@@ -155,26 +155,26 @@ function getCareerAwards(obj: any): Set<CareerAwardId> {
 }
 
 function combine<T>(items: Array<T>, numSubItems: number): Array<Array<T>> {
-  var result = [];
-  var indexes = new Array(numSubItems);
-  for (var i = 0; i < numSubItems; i++) {
+  let result = [];
+  let indexes = new Array(numSubItems);
+  for (let i = 0; i < numSubItems; i++) {
     indexes[i] = i;
   }
   while (indexes[0] < items.length - numSubItems + 1) {
-    var v = [];
-    for (var i = 0; i < numSubItems; i++) {
+    let v = [];
+    for (let i = 0; i < numSubItems; i++) {
       v.push(items[indexes[i]]);
     }
     result.push(v);
     indexes[numSubItems - 1]++;
-    var l = numSubItems - 1; // reference always is the last position at beginning
+    let l = numSubItems - 1; // reference always is the last position at beginning
     while (
       indexes[numSubItems - 1] >= items.length &&
       indexes[0] < items.length - numSubItems + 1
     ) {
       l--; // the last position is reached
       indexes[l]++;
-      for (var i = l + 1; i < numSubItems; i++) {
+      for (let i = l + 1; i < numSubItems; i++) {
         indexes[i] = indexes[l] + (i - l);
       }
     }
@@ -520,7 +520,7 @@ export function playerMatchesSquare(
       return playerData[awardId];
     }
   } else {
-    for (const [awardId, qualifiedStatus] of [row, col]) {
+    for (const [awardId, _qualifiedStatus] of [row, col]) {
       const award = getAward(awardId);
       if (award.timespan === AwardTimespan.SEASON) {
         if (!playerData.teams.some((t: any) => t[awardId])) {
