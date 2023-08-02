@@ -222,7 +222,6 @@ function getRandomPlayerAndGrid(
 
 function GameImpl(props: {
   guess: any | null;
-  isGuessCorrect: boolean;
   onGuess: (g: any) => void;
   grid: AugmentedGrid;
   playerData: any;
@@ -240,12 +239,14 @@ function GameImpl(props: {
     grid,
     onAllowUnqualifiedToggle,
     yearFilter,
-    isGuessCorrect,
     onYearFilterChange,
     onNext,
   } = props;
   const [showYears, setShowYears] = useState<boolean>(false);
   const [showLength, setShowLength] = useState<boolean>(false);
+
+  // TODO: handle grids that could apply to multiple players
+  const isCorrect = guess && guess.id === playerData.id;
 
   const notYetCorrectHeader = (
     <>
@@ -327,7 +328,7 @@ function GameImpl(props: {
           />
         </div>
         <br />
-        {isGuessCorrect ? (
+        {isCorrect ? (
           <CorrectGuessDisplay
             player={guess}
             onNext={() => {
@@ -360,24 +361,8 @@ function Game() {
   }>(getRandomPlayerAndGrid(allowUnqualified, yearFilter));
   const [guess, setGuess] = useState<any>(null);
 
-  let isGuessCorrect = true;
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 3; col++) {
-      if (
-        !playerMatchesSquare(
-          playerDataAndGrid.player,
-          playerDataAndGrid.grid.rows[row],
-          playerDataAndGrid.grid.columns[col]
-        )
-      ) {
-        isGuessCorrect = false;
-        break;
-      }
-    }
-  }
-
   if (
-    !isGuessCorrect &&
+    !(guess !== null && guess.id === playerDataAndGrid.player.id) &&
     (!playerMatchesYearFilter(playerDataAndGrid.player, yearFilter) ||
       (!allowUnqualified && gridHasUnqualifiedStats(playerDataAndGrid.grid)))
   ) {
@@ -393,7 +378,6 @@ function Game() {
       playerData={playerDataAndGrid.player}
       grid={playerDataAndGrid.grid}
       guess={guess}
-      isGuessCorrect={isGuessCorrect}
       onGuess={setGuess}
       allowUnqualified={allowUnqualified}
       yearFilter={yearFilter}
@@ -562,7 +546,6 @@ function All() {
           // doesnt seem noticeable on page load
           const grids = gridsForPlayer(playerData);
           const isUnqualified = gridHasUnqualifiedStats(grids[0]!);
-
           return (
             <li>
               <Link to={`/players/${playerData.id}`}>
