@@ -422,7 +422,7 @@ export const DATA = [
       },
       { id: "TEX" },
       { id: "ANA" },
-      { id: "CLE", season_allstar: "unqualified" },
+      { id: "CLE", season_allstar: "qualified" },
       { id: "PIT", ws_champ: "qualified" },
     ],
     years: "1970-1992",
@@ -1514,8 +1514,8 @@ export const DATA = [
     teams: [
       {
         id: "KCR",
-        season_allstar: "unqualified",
-        season_award_cy_young: "unqualified",
+        season_allstar: "qualified",
+        season_award_cy_young: "qualified",
       },
       {
         id: "NYM",
@@ -1532,7 +1532,7 @@ export const DATA = [
         ws_champ: "qualified",
       },
       { id: "BOS" },
-      { id: "TOR", ws_champ: "unqualified" },
+      { id: "TOR", ws_champ: "qualified" },
     ],
     years: "1986-2003",
   },
@@ -2154,8 +2154,8 @@ export const DATA = [
       },
       {
         id: "BOS",
-        season_allstar: "unqualified",
-        season_p_w_20: "unqualified",
+        season_allstar: "qualified",
+        season_p_w_20: "qualified",
       },
     ],
     years: "1975-1998",
@@ -4116,7 +4116,7 @@ export const DATA = [
       { id: "LAD" },
       { id: "SDP" },
       { id: "CHC", season_allstar: "qualified" },
-      { id: "PHI", season_allstar: "unqualified" },
+      { id: "PHI", season_allstar: "qualified" },
       {
         id: "ATL",
         season_allstar: "qualified",
@@ -4326,11 +4326,11 @@ export const DATA = [
       { id: "STL", season_allstar: "qualified", season_p_sv_40: "qualified" },
       { id: "BOS" },
       { id: "CHC", season_allstar: "qualified" },
-      { id: "ANA", season_allstar: "unqualified" },
+      { id: "ANA", season_allstar: "qualified" },
       { id: "CIN" },
       { id: "WSN" },
       { id: "NYY" },
-      { id: "BAL", season_allstar: "unqualified" },
+      { id: "BAL", season_allstar: "qualified" },
     ],
     years: "1980-1997",
   },
@@ -4842,8 +4842,8 @@ export const DATA = [
       },
       {
         id: "STL",
-        season_b_avg_300: "unqualified",
-        season_b_sb_30: "unqualified",
+        season_b_avg_300: "qualified",
+        season_b_sb_30: "qualified",
       },
     ],
     years: "1884-1896",
@@ -5220,7 +5220,7 @@ export const DATA = [
     name_last: "Morris",
     search_name: ["Jack Morris"],
     teams: [
-      { id: "MIN", season_allstar: "unqualified", ws_champ: "unqualified" },
+      { id: "MIN", season_allstar: "qualified", ws_champ: "qualified" },
       { id: "CLE" },
       {
         id: "DET",
@@ -5229,7 +5229,7 @@ export const DATA = [
         season_p_w_20: "qualified",
         ws_champ: "qualified",
       },
-      { id: "TOR", season_p_w_20: "unqualified", ws_champ: "unqualified" },
+      { id: "TOR", season_p_w_20: "qualified", ws_champ: "qualified" },
     ],
     years: "1977-1994",
   },
@@ -5389,7 +5389,7 @@ export const DATA = [
     search_name: ["Phil Niekro"],
     teams: [
       { id: "CLE" },
-      { id: "NYY", season_allstar: "unqualified" },
+      { id: "NYY", season_allstar: "qualified" },
       {
         id: "ATL",
         season_allstar: "qualified",
@@ -5454,7 +5454,7 @@ export const DATA = [
     teams: [
       {
         id: "TEX",
-        season_allstar: "unqualified",
+        season_allstar: "qualified",
         season_p_so_200: "unqualified",
       },
       { id: "NYM", ws_champ: "qualified" },
@@ -6974,7 +6974,7 @@ export const DATA = [
         season_b_avg_300: "unqualified",
       },
       { id: "ATL", ws_champ: "qualified" },
-      { id: "HOU", ws_champ: "unqualified" },
+      { id: "HOU", ws_champ: "qualified" },
       { id: "MIL" },
     ],
     years: "2012-2023",
