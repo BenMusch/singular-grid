@@ -467,6 +467,18 @@ function Instructions() {
       </p>
 
       <p>
+        <b>What does the "unqualified statistics" filter mean</b>
+        <br />
+        "Qualified" stats mean a player played enough to be eligible for
+        year-end titles. Filtering it out mostly excludes pitchers from batting
+        average awards. Read more{" "}
+        <a href="https://www.baseball-reference.com/bullpen/Qualifier#:~:text=A%20player%20qualifies%20to%20lead,inning%20per%20game%20for%20pitchers.">
+          here
+        </a>
+        .
+      </p>
+
+      <p>
         <b>Who made this? Is it open source?</b>
         <br />
         <a href="https://twitter.com/benmusch">Ben Muschol</a>. The code is
