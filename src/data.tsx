@@ -7953,7 +7953,7 @@ export const DATA = [
       { id: "SDP" },
       { id: "CIN" },
       { id: "NYY", season_allstar: "qualified", ws_champ: "qualified" },
-      { id: "DET", season_allstar: "unqualified" },
+      { id: "DET", season_allstar: "qualified" },
       { id: "BAL" },
       {
         id: "TOR",
