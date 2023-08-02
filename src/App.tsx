@@ -542,15 +542,21 @@ function All() {
       <h1>All possible players</h1>
       <ul>
         {DATA.map((playerData: any) => {
+          // this is theoreitcally inefficient and should be pre-calculated, but
+          // doesnt seem noticeable on page load
+          const grids = gridsForPlayer(playerData);
+          const isUnqualified = gridHasUnqualifiedStats(grids[0]!);
           return (
             <li>
               <Link to={`/players/${playerData.id}`}>
                 {playerData.name} ({playerData.years})
               </Link>
+              {isUnqualified && "*"}
             </li>
           );
         })}
       </ul>
+      <p>* = only valid grids contain unqualified stats</p>
       <footer>
         <Link to="/">Play the game</Link>
         {" • "}
