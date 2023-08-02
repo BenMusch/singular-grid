@@ -27,6 +27,7 @@ export type Award = {
 
 type SeasonAward = Award & { timespan: AwardTimespan.SEASON };
 type CareerAward = Award & { timespan: AwardTimespan.CAREER };
+export type QualifiedStatus = "qualified" | "unqualified";
 
 export const CAREER_AWARDS_BY_ID: { [k: string]: CareerAward } = {
   career_p_sv_300: {
@@ -138,6 +139,11 @@ export type Grid = {
   rows: [Team, Team, AwardId | Team];
 };
 
+export type AugmentedGrid = {
+  columns: [Team, Team, [AwardId, QualifiedStatus]];
+  rows: [Team, Team, [AwardId, QualifiedStatus] | Team];
+};
+
 function getCareerAwards(obj: any): Set<CareerAwardId> {
   const awards = new Set<CareerAwardId>();
   for (const [key, val] of Object.entries(obj)) {
@@ -148,7 +154,35 @@ function getCareerAwards(obj: any): Set<CareerAwardId> {
   return awards;
 }
 
-export function gridsForPlayer(playerData: any): Grid[] {
+function combine<T>(items: Array<T>, numSubItems: number): Array<Array<T>> {
+  var result = [];
+  var indexes = new Array(numSubItems);
+  for (var i = 0; i < numSubItems; i++) {
+    indexes[i] = i;
+  }
+  while (indexes[0] < items.length - numSubItems + 1) {
+    var v = [];
+    for (var i = 0; i < numSubItems; i++) {
+      v.push(items[indexes[i]]);
+    }
+    result.push(v);
+    indexes[numSubItems - 1]++;
+    var l = numSubItems - 1; // reference always is the last position at beginning
+    while (
+      indexes[numSubItems - 1] >= items.length &&
+      indexes[0] < items.length - numSubItems + 1
+    ) {
+      l--; // the last position is reached
+      indexes[l]++;
+      for (var i = l + 1; i < numSubItems; i++) {
+        indexes[i] = indexes[l] + (i - l);
+      }
+    }
+  }
+  return result;
+}
+
+function generateGridsForPlayer(playerData: any): Grid[] {
   const grids: Grid[] = [];
   const careerAwards = getCareerAwards(playerData);
   const teamsBySeasonAward = new Map<SeasonAwardId, Set<Team>>();
@@ -172,37 +206,40 @@ export function gridsForPlayer(playerData: any): Grid[] {
     // Try 6-team season award grid
     for (const [seasonAward, teams] of teamsBySeasonAward.entries()) {
       if (teams.size >= 3) {
-        const rows = [...teams].slice(0, 3);
-        const columns = [];
+        for (const teamCombination of combine([...teams], 3)) {
+          const rows = teamCombination;
+          const columns = [];
 
-        for (const team of allTeams) {
-          if (columns.length === 2) {
-            break;
+          for (const team of allTeams) {
+            if (columns.length === 2) {
+              break;
+            }
+
+            if (rows.includes(team)) {
+              continue;
+            }
+
+            columns.push(team);
           }
+          columns.push(seasonAward);
 
-          if (rows.includes(team)) {
-            continue;
-          }
-
-          columns.push(team);
+          grids.push({ rows, columns } as Grid);
         }
-        columns.push(seasonAward);
-
-        grids.push({ rows, columns } as Grid);
       }
     }
 
     // Try 6 team career award grid
     if (careerAwards.size >= 1) {
-      const careerAward = [...careerAwards][0]!;
-      const teams = [...allTeams];
-      grids.push({
-        rows: teams.slice(0, 3) as [Team, Team, Team],
-        columns: [
-          ...(teams.slice(3, 5) as [Team, Team]),
-          careerAward as unknown as AwardId,
-        ],
-      });
+      for (const careerAward of careerAwards) {
+        const teams = [...allTeams];
+        grids.push({
+          rows: teams.slice(0, 3) as [Team, Team, Team],
+          columns: [
+            ...(teams.slice(3, 5) as [Team, Team]),
+            careerAward as unknown as AwardId,
+          ],
+        });
+      }
     }
   }
 
@@ -225,80 +262,99 @@ export function gridsForPlayer(playerData: any): Grid[] {
       }
 
       if (teams1.size > teams2.size) {
-        const rows = [...[...teams2].slice(0, 2), seasonAward1];
-        const columns = [];
+        for (const teams2Pairing of combine([...teams2], 2)) {
+          const rows = [...teams2Pairing, seasonAward1];
 
-        for (const team of teams1) {
-          if (columns.length === 2) {
-            break;
+          for (const teams1Pairing of combine([...teams1], 2)) {
+            const columns = [];
+            for (const team of teams1Pairing) {
+              if (rows.includes(team)) {
+                continue;
+              }
+
+              columns.push(team);
+            }
+
+            if (columns.length < 2) {
+              // Could not generate a valid grid with this team pairing,
+              // likely overlap between the teams being used
+              continue;
+            }
+
+            columns.push(seasonAward2);
+            grids.push({ rows, columns } as Grid);
           }
-
-          if (rows.includes(team)) {
-            continue;
-          }
-
-          columns.push(team);
         }
-        columns.push(seasonAward2);
-
-        grids.push({ rows, columns } as Grid);
       } else {
-        const rows = [...[...teams1].slice(0, 2), seasonAward2];
-        const columns = [];
+        for (const teams1Pairing of combine([...teams1], 2)) {
+          const rows = [...teams1Pairing, seasonAward2];
 
-        for (const team of teams2) {
-          if (columns.length === 2) {
-            break;
+          for (const teams2Pairing of combine([...teams2], 2)) {
+            const columns = [];
+            for (const team of teams2Pairing) {
+              if (rows.includes(team)) {
+                continue;
+              }
+
+              columns.push(team);
+            }
+
+            if (columns.length < 2) {
+              // Could not generate a valid grid with this team pairing,
+              // likely overlap between the teams being used
+              continue;
+            }
+
+            columns.push(seasonAward1);
+            grids.push({ rows, columns } as Grid);
           }
-
-          if (rows.includes(team)) {
-            continue;
-          }
-
-          columns.push(team);
         }
-        columns.push(seasonAward1);
-
-        grids.push({ rows, columns } as Grid);
       }
     }
   }
 
-  // TODO iterate more
-  if (careerAwards.size >= 1) {
+  // Try for 1-career 1-season award grids
+  for (const careerAward of careerAwards) {
     for (const [seasonAward, teams] of teamsBySeasonAward.entries()) {
       if (teams.size >= 2) {
-        const rows = [...[...teams].slice(0, 2), [...careerAwards][0]!];
-        const columns = [];
+        for (const teamsPairing of combine([...teams], 2)) {
+          const rows = [...teamsPairing, careerAward];
+          const columns = [];
 
-        for (const team of allTeams) {
-          if (columns.length === 2) {
-            break;
+          // theoretically could iterate here to generate every possible grid,
+          // put there's no need since qualificaiton status doesn't change based
+          // on team for career awards, and the teams here are affected by the
+          // career award grid
+          for (const team of allTeams) {
+            if (columns.length === 2) {
+              break;
+            }
+
+            if (rows.includes(team)) {
+              continue;
+            }
+
+            columns.push(team);
           }
 
-          if (rows.includes(team)) {
-            continue;
-          }
-
-          columns.push(team);
+          columns.push(seasonAward);
+          grids.push({ rows, columns } as Grid);
         }
-        columns.push(seasonAward);
-
-        grids.push({ rows, columns } as Grid);
       }
     }
   }
 
   if (careerAwards.size >= 2) {
-    const careerAward1 = [...careerAwards][0]!;
-    const careerAward2 = [...careerAwards][1]!;
-    const teams = [...allTeams];
+    for (const careerAwardPairing of combine([...careerAwards], 2)) {
+      const careerAward1 = careerAwardPairing[0]!;
+      const careerAward2 = careerAwardPairing[1]!;
+      const teams = [...allTeams];
 
-    // TODO iterate more, we can generate every single combination of 2 awards
-    grids.push({
-      rows: [...teams.slice(0, 2), careerAward1],
-      columns: [...teams.slice(2, 4), careerAward2],
-    } as unknown as Grid);
+      grids.push({
+        rows: [...teams.slice(0, 2), careerAward1],
+        columns: [...teams.slice(2, 4), careerAward2],
+      } as unknown as Grid);
+    }
   }
 
   return grids;
@@ -318,20 +374,26 @@ function getAward(awardId: AwardId) {
  * Simple scoring mechanism to determine the "preferable" grid that exists for a
  * player
  */
-function scoreGrid(grid: Grid): number {
+function scoreGrid(grid: AugmentedGrid): number {
   let score = 0;
 
-  const awards = [getAward(grid.columns[2])];
-  if (isAward(grid.rows[2])) {
-    awards.push(getAward(grid.rows[2]));
+  const awardIdsAndStatus = [grid.columns[2]];
+  if (typeof grid.rows[2] !== "string") {
+    awardIdsAndStatus.push(grid.rows[2]);
   }
 
   if (grid.columns.length < 3 || grid.rows.length < 3) {
     // too lazy to fix whatever caused this
-    return -1000000000000;
+    return -100000000000000;
   }
 
-  for (const award of awards) {
+  for (const [awardId, qualifiedStatus] of awardIdsAndStatus) {
+    const award = getAward(awardId);
+    // prefer qualified awards
+    if (qualifiedStatus === "unqualified") {
+      score -= 10000;
+    }
+
     // Prefer season awards
     if (award.timespan === AwardTimespan.SEASON) {
       score += 2;
@@ -343,17 +405,19 @@ function scoreGrid(grid: Grid): number {
   }
 
   // Prefer 6-team grids
-  if (awards.length === 1) {
+  if (awardIdsAndStatus.length === 1) {
     score += 10;
   } else {
     // Slightly prefer mixing career + season awards
-    if (awards[0].timespan === awards[1].timespan) {
+    const award1 = getAward(awardIdsAndStatus[0][0]);
+    const award2 = getAward(awardIdsAndStatus[1][0]);
+    if (award1.timespan === award2.timespan) {
       score -= 4;
     }
 
     if (
-      awards[0].statistic === awards[1].statistic &&
-      awards[0].statistic !== undefined
+      award1.statistic === award2.statistic &&
+      award1.statistic !== undefined
     ) {
       // Heavily de-prioritize grids for the same statistic
       score -= 50;
@@ -363,43 +427,100 @@ function scoreGrid(grid: Grid): number {
   return score;
 }
 
-export function gridForPlayer(playerData: any): Grid {
-  let maxScore = Number.NEGATIVE_INFINITY;
-  let maxGrid: Grid | null = null;
-  for (const grid of gridsForPlayer(playerData)) {
-    const curScore = scoreGrid(grid);
-    console.log(grid, curScore);
-    if (curScore > maxScore) {
-      maxScore = curScore;
-      maxGrid = grid;
-    }
+function getStatisticQualifiedStatus(
+  affectedTeams: Team[],
+  playerData: any,
+  awardId: AwardId
+): QualifiedStatus {
+  if (CAREER_AWARDS_BY_ID[awardId]) {
+    return playerData[awardId] as QualifiedStatus;
+  } else if (SEASON_AWARDS_BY_ID[awardId]) {
+    const allQualified = playerData.teams.every((teamData: any) => {
+      return (
+        !affectedTeams.includes(teamData.id) ||
+        teamData[awardId] === "qualified"
+      );
+    });
+
+    return allQualified ? "qualified" : "unqualified";
+  } else {
+    throw new Error("Not an awardID: " + awardId);
   }
-  if (maxGrid) {
-    return maxGrid;
+}
+
+function augmentGridWithQualifiedStatus(
+  grid: Grid,
+  playerData: any
+): AugmentedGrid {
+  const rowTeams = grid.rows.filter((rowItem) => !isAward(rowItem)) as Team[];
+  const colTeams = grid.columns.filter(
+    (colItem) => !isAward(colItem)
+  ) as Team[];
+
+  let augmentedRows;
+  if (
+    !!(CAREER_AWARDS_BY_ID[grid.rows[2]] ?? SEASON_AWARDS_BY_ID[grid.rows[2]])
+  ) {
+    augmentedRows = [
+      ...rowTeams,
+      [
+        grid.rows[2],
+        getStatisticQualifiedStatus(colTeams, playerData, grid.rows[2]),
+      ],
+    ];
+  } else {
+    augmentedRows = grid.rows;
   }
 
-  if (maxGrid) {
-    return maxGrid;
-  }
+  const augmentedCols = [
+    ...colTeams,
+    [
+      grid.columns[2],
+      getStatisticQualifiedStatus(rowTeams, playerData, grid.columns[2]),
+    ],
+  ];
 
-  console.log(playerData);
-  throw new Error(
-    "Could not generate grid for player! This should never happen"
+  return {
+    rows: augmentedRows,
+    columns: augmentedCols,
+  } as AugmentedGrid;
+}
+
+export function gridsForPlayer(playerData: any): AugmentedGrid[] {
+  const allGrids = generateGridsForPlayer(playerData);
+  const augmentedGrids = allGrids.map((grid) =>
+    augmentGridWithQualifiedStatus(grid, playerData)
   );
+
+  return augmentedGrids.sort((a, b) => scoreGrid(b) - scoreGrid(a));
 }
 
 export function playerMatchesSquare(
   playerData: any,
-  row: Team | AwardId,
-  col: Team | AwardId
+  row: Team | [AwardId, QualifiedStatus],
+  col: Team | [AwardId, QualifiedStatus]
 ) {
-  if (!isAward(row) && !isAward(col)) {
+  if (typeof row === "string" && typeof col === "string") {
     return (
       playerData.teams.some((team: any) => team.id === row) &&
       playerData.teams.some((team: any) => team.id === col)
     );
-  } else if (isAward(row) && isAward(col)) {
-    for (const awardId of [row, col]) {
+  } else if (typeof row === "string" || typeof col === "string") {
+    const awardId = typeof row === "string" ? col[0] : row[0];
+    const award = getAward(awardId);
+    const team = typeof row === "string" ? row : col;
+
+    if (!playerData.teams.some((t: any) => t.id === team)) {
+      return false;
+    }
+
+    if (award.timespan === AwardTimespan.SEASON) {
+      return playerData.teams.some((t: any) => t.id === team && t[awardId]);
+    } else {
+      return playerData[awardId];
+    }
+  } else {
+    for (const [awardId, qualifiedStatus] of [row, col]) {
       const award = getAward(awardId);
       if (award.timespan === AwardTimespan.SEASON) {
         if (!playerData.teams.some((t: any) => t[awardId])) {
@@ -412,19 +533,5 @@ export function playerMatchesSquare(
       }
     }
     return true;
-  } else {
-    const awardId = isAward(row) ? row : col;
-    const award = getAward(awardId);
-    const team = isAward(row) ? col : row;
-
-    if (!playerData.teams.some((t: any) => t.id === team)) {
-      return false;
-    }
-
-    if (award.timespan === AwardTimespan.SEASON) {
-      return playerData.teams.some((t: any) => t.id === team && t[awardId]);
-    } else {
-      return playerData[awardId];
-    }
   }
 }

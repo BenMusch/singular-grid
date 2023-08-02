@@ -25,6 +25,10 @@ body {
   margin-left: 0.5em;
 }
 
+.unqualified-select {
+  margin-top: 0.5em;
+}
+
 button.link {
   background: none !important;
   border: none;

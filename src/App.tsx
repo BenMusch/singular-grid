@@ -5,9 +5,15 @@ import { Link, useParams } from "react-router-dom";
 import Select from "react-select";
 
 import { DATA } from "./data";
-import type { Grid, Team, Award, AwardId } from "./baseball";
+import type {
+  AugmentedGrid,
+  Team,
+  Award,
+  AwardId,
+  QualifiedStatus,
+} from "./baseball";
 import {
-  gridForPlayer,
+  gridsForPlayer,
   playerMatchesSquare,
   SEASON_AWARDS_BY_ID,
   CAREER_AWARDS_BY_ID,
@@ -32,22 +38,32 @@ function Logo(props: { team: Team }) {
   );
 }
 
-function AwardDisplay(props: { award: Award }) {
-  const { award } = props;
-  return <p>{award.name}</p>;
+function AwardDisplay(props: {
+  award: Award;
+  qualifiedStatus: QualifiedStatus;
+}) {
+  const { award, qualifiedStatus } = props;
+  return (
+    <span>
+      <p>{award.name}</p>
+      {qualifiedStatus === "unqualified" && <small>(Unqualified)</small>}
+    </span>
+  );
 }
 
-function TeamOrAward(props: { teamOrAward: Team | AwardId }) {
+function TeamOrAward(props: {
+  teamOrAward: Team | [AwardId, QualifiedStatus];
+}) {
   const { teamOrAward } = props;
-  const award: Award | undefined =
-    SEASON_AWARDS_BY_ID[teamOrAward] || CAREER_AWARDS_BY_ID[teamOrAward];
-  if (award) {
-    return <AwardDisplay award={award} />;
+  if (typeof teamOrAward === "string") {
+    return <Logo team={teamOrAward as Team} />;
   }
-  return <Logo team={teamOrAward as Team} />;
+  const award: Award | undefined =
+    SEASON_AWARDS_BY_ID[teamOrAward[0]] || CAREER_AWARDS_BY_ID[teamOrAward[0]];
+  return <AwardDisplay award={award} qualifiedStatus={teamOrAward[1]} />;
 }
 
-function GridDisplay(props: { grid: Grid; guess: any | null }) {
+function GridDisplay(props: { grid: AugmentedGrid; guess: any | null }) {
   const { grid, guess } = props;
 
   const contentForRowAndCol = (rowNum: number, colNum: number) => {
@@ -162,28 +178,79 @@ function CorrectGuessDisplay(props: { player: any; onNext: () => void }) {
   );
 }
 
-function Game() {
-  const [yearFilter, setYearFilter] = useState<number>(0);
-  const playerMatchesFilter = (playerData: any) => {
-    const lastActiveYear = parseInt(playerData.years.split("-")[1]);
-    return lastActiveYear >= yearFilter;
-  };
-  const randPlayer = () => {
-    const eligiblePlayers = DATA.filter(playerMatchesFilter);
-    return eligiblePlayers[Math.floor(Math.random() * eligiblePlayers.length)]!;
-  };
-  const [playerData, setPlayerData] = useState<any>(randPlayer());
-  const [guess, setGuess] = useState<any>(null);
+function gridHasUnqualifiedStats(grid: AugmentedGrid): boolean {
+  let hasUnqualified = grid.columns[2][1] === "unqualified";
+  if (!hasUnqualified && typeof grid.rows[2] !== "string") {
+    hasUnqualified = grid.rows[2][1] === "unqualified";
+  }
+  return hasUnqualified;
+}
+
+function shuffleArray<T>(array: Array<T>): Array<T> {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function playerMatchesYearFilter(playerData: any, minYear: number): boolean {
+  const lastActiveYear = parseInt(playerData.years.split("-")[1]);
+  return lastActiveYear >= minYear;
+}
+
+function getRandomPlayerAndGrid(
+  allowUnqualified: boolean,
+  minYear: number
+): { player: any; grid: AugmentedGrid } {
+  const eligiblePlayers = shuffleArray(
+    DATA.filter((playerData: any) => {
+      return playerMatchesYearFilter(playerData, minYear);
+    })
+  );
+
+  for (const player of eligiblePlayers) {
+    const grids = gridsForPlayer(player);
+    const grid = grids[0];
+    if (allowUnqualified || !gridHasUnqualifiedStats(grid)) {
+      return { player, grid };
+    }
+  }
+
+  throw new Error("Could not find eligible player");
+}
+
+function GameImpl(props: {
+  guess: any | null;
+  onGuess: (g: any) => void;
+  grid: AugmentedGrid;
+  playerData: any;
+  allowUnqualified: boolean;
+  onAllowUnqualifiedToggle: () => void;
+  yearFilter: number;
+  onYearFilterChange: (y: number) => void;
+  onNext: () => void;
+}) {
+  const {
+    guess,
+    onGuess,
+    playerData,
+    allowUnqualified,
+    grid,
+    onAllowUnqualifiedToggle,
+    yearFilter,
+    onYearFilterChange,
+    onNext,
+  } = props;
   const [showYears, setShowYears] = useState<boolean>(false);
   const [showLength, setShowLength] = useState<boolean>(false);
 
   // TODO: handle grids that could apply to multiple players
   const isCorrect = guess && guess.id === playerData.id;
-  const grid = gridForPlayer(playerData);
 
   const notYetCorrectHeader = (
     <>
-      <GuessSelect onGuess={setGuess} curGuess={guess} />
+      <GuessSelect onGuess={onGuess} curGuess={guess} />
       <div className="player-info">
         <div className="player-name">
           Name:{" "}
@@ -210,20 +277,13 @@ function Game() {
           </span>
         </div>
         <div className="give-up">
-          <button className="link" onClick={() => setGuess(playerData)}>
+          <button className="link" onClick={() => onGuess(playerData)}>
             Give Up
           </button>
         </div>
       </div>
     </>
   );
-
-  if (!playerMatchesFilter(playerData)) {
-    setPlayerData(randPlayer());
-    setGuess(null);
-    setShowYears(false);
-    setShowLength(false);
-  }
 
   return (
     <div>
@@ -236,7 +296,7 @@ function Game() {
             value={yearFilter ? yearFilter : "0"}
             onChange={(e) => {
               e.preventDefault();
-              setYearFilter(parseInt(e.target.value));
+              onYearFilterChange(parseInt(e.target.value));
             }}
           >
             <option value="0" key={-1}>
@@ -254,21 +314,33 @@ function Game() {
             })}
           </select>
         </div>
+        <div className="unqualified-select">
+          <label htmlFor="unqualified">
+            Allow unqualified seasons/statistics:
+          </label>
+          <input
+            type="checkbox"
+            id="unqualified"
+            checked={allowUnqualified}
+            onChange={(e) => {
+              onAllowUnqualifiedToggle();
+            }}
+          />
+        </div>
         <br />
         {isCorrect ? (
           <CorrectGuessDisplay
             player={guess}
             onNext={() => {
-              setGuess(null);
               setShowYears(false);
               setShowLength(false);
-              setPlayerData(randPlayer());
+              onNext();
             }}
           />
         ) : (
           notYetCorrectHeader
         )}
-        <GridDisplay grid={grid} guess={guess} />
+        <GridDisplay grid={grid!} guess={guess} />
         <footer>
           <Link to="/players">Browse all players</Link>
           {" • "}
@@ -279,10 +351,53 @@ function Game() {
   );
 }
 
+function Game() {
+  const [allowUnqualified, setAllowUnqualified] = useState<boolean>(false);
+  const [yearFilter, setYearFilter] = useState<number>(0);
+
+  const [playerDataAndGrid, setPlayerDataAndGrid] = useState<{
+    player: any;
+    grid: AugmentedGrid;
+  }>(getRandomPlayerAndGrid(allowUnqualified, yearFilter));
+  const [guess, setGuess] = useState<any>(null);
+
+  if (
+    !(guess !== null && guess.id === playerDataAndGrid.player.id) &&
+    (!playerMatchesYearFilter(playerDataAndGrid.player, yearFilter) ||
+      (!allowUnqualified && gridHasUnqualifiedStats(playerDataAndGrid.grid)))
+  ) {
+    const newPlayerAndGrid = getRandomPlayerAndGrid(
+      allowUnqualified,
+      yearFilter
+    );
+    setPlayerDataAndGrid(newPlayerAndGrid);
+  }
+
+  return (
+    <GameImpl
+      playerData={playerDataAndGrid.player}
+      grid={playerDataAndGrid.grid}
+      guess={guess}
+      onGuess={setGuess}
+      allowUnqualified={allowUnqualified}
+      yearFilter={yearFilter}
+      onYearFilterChange={setYearFilter}
+      onAllowUnqualifiedToggle={() => setAllowUnqualified(!allowUnqualified)}
+      onNext={() => {
+        setPlayerDataAndGrid(
+          getRandomPlayerAndGrid(allowUnqualified, yearFilter)
+        );
+        setGuess(null);
+      }}
+    />
+  );
+}
+
 function Player() {
   const { id } = useParams();
   const player = DATA.find((playerData: any) => playerData.id === id)!;
-  const grid = gridForPlayer(player);
+  const grids = gridsForPlayer(player);
+  const grid = grids[0];
 
   return (
     <div>
